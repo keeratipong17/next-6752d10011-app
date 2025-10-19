@@ -5,6 +5,7 @@ import Logo from "../../assets/images/training.png";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
+import Footer from "../../component/footer";
 
 type TaskRow = {
   id: string;
@@ -190,14 +191,14 @@ export default function Page() {
                     {/* ปุ่ม Action */}
                     <td className="py-4 pr-5 pl-3 rounded-r-xl text-center">
                       <Link
-                        className="text-green-600 mr-5 hover:underline"
-                        href={`/edit/${task.id}`}
+                        className="text-blue-600 mr-5 hover:underline"
+                        href={`#`}
                       >
                         แก้ไข
                       </Link>
                       <button
                         onClick={() => handleDeleteClick(task.id)}
-                        className="text-red-600 hover:underline"
+                        className="text-blue-600 hover:underline"
                       >
                         ลบ
                       </button>
@@ -220,6 +221,7 @@ export default function Page() {
           </Link>
         </div>
       </div>
+      <Footer/>
     </>
   );
 }

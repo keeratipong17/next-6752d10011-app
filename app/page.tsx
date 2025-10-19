@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Task from "../assets/images/training.png";
 import Link from "next/link";
-
+import Footer from "../component/footer";
 
 export default function Home() {
   return (
@@ -31,7 +31,7 @@ export default function Home() {
           เข้าสู่หน้าข้อมูลการวิ่งของฉัน
         </Link>
       </div>
-      
+      <Footer/>
     </>
   );
 }

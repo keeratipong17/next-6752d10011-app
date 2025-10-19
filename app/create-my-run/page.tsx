@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import task from "./../../assets/images/training.png";
+import Footer from "../../component/footer";
 
 export default function Page() {
   // ฟิลด์ข้อมูลการวิ่ง
@@ -110,7 +111,7 @@ export default function Page() {
       <div className="flex flex-col items-center pb-30">
         {/* ส่วนบน */}
         <Image className="mt-20" src={task} alt="Task" width={120} />
-        <h1 className="mt-8 text-2xl font-bold text-blue-700">
+        <h1 className="mt-8 text-2xl font-bold text-black-700">
           เพิ่มข้อมูลการวิ่งของฉัน
         </h1>
 
@@ -212,11 +213,12 @@ export default function Page() {
 
           <Link
             href="/show-all-myrun"
-            className="text-blue-500 w-full text-center mt-5 block hover:text-blue-600"
+            className="text-red-600 w-full text-center mt-5 block hover:text-red-700"
           >
             กลับไปหน้าแสดงรายการวิ่ง
           </Link>
         </div>
+        <Footer/>
       </div>
     </>
   );
