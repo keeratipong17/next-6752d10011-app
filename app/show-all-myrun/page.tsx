@@ -20,25 +20,70 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      const { data, error } = await supabase
-        .from("myrun_tb")
-        .select(
-          "id, created_at, run_date, run_distance, run_place, run_image_url"
-        )
-        .order("created_at", { ascending: false });
+  const fetchTasks = async () => {
+    const { data, error } = await supabase
+      .from("myrun_tb")
+      .select("id, created_at, run_date, run_distance, run_place, run_image_url")
+      .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("SUPABASE SELECT ERROR:", error);
-        alert("เกิดข้อผิดพลาดในการดึงข้อมูล กรุณาลองใหม่");
-      } else {
-        console.log("SUPABASE DATA:", data);
-        setTasks((data ?? []) as TaskRow[]);
-      }
+    if (error) {
+      console.error("SUPABASE SELECT ERROR:", error);
+      alert("เกิดข้อผิดพลาดในการดึงข้อมูล กรุณาลองใหม่");
       setLoading(false);
-    };
-    fetchTasks();
-  }, []);
+      return;
+    }
+
+    const rows = await Promise.all(
+      (data ?? []).map(async (row) => {
+        let raw = row.run_image_url ?? "";
+        // ตัดช่องว่าง + ตัด ' หรือ " ที่ห่อไว้
+        const clean = raw.trim().replace(/^['"]+|['"]+$/g, "");
+
+        // ถ้าเป็น URL เต็มอยู่แล้ว ใช้เลย
+        if (clean.startsWith("http")) {
+          return { ...row, run_image_url: clean };
+        }
+
+        // ถ้าเป็น "ชื่อไฟล์" ใน bucket -> สร้างลิงก์ (ใช้ได้ทั้ง public/private)
+        if (clean) {
+          const { data: signed, error: sErr } = await supabase
+            .storage
+            .from("test_bk")
+            .createSignedUrl(clean, 60 * 60 * 24); // อายุ 24 ชม.
+
+          if (!sErr && signed?.signedUrl) {
+            return { ...row, run_image_url: signed.signedUrl };
+          }
+
+          // fallback: public URL (กรณีบัคเก็ตเป็น Public)
+          const { data: pub } = supabase.storage.from("test_bk").getPublicUrl(clean);
+          return { ...row, run_image_url: pub.publicUrl };
+        }
+
+        return row;
+      })
+    );
+
+    setTasks(rows as TaskRow[]);
+    setLoading(false);
+  };
+
+  fetchTasks();
+}, []);
+
+  const safeThaiDate = (value: string) => {
+    const d = new Date(value);
+    // ตรวจว่า valid date ไหม
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString("th-TH", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+    // ถ้าไม่ valid (เช่น "20 ตุลาคม") ให้แสดงตามที่เก็บมา
+    return value || "-";
+  };
 
   const handleDeleteClick = async (id: string) => {
     if (!confirm("คุณแน่ใจว่าจะลบหรือไม่")) return;
@@ -55,15 +100,6 @@ export default function Page() {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const fmtDate = (iso?: string) =>
-    iso
-      ? new Date(iso).toLocaleDateString("th-TH", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
-      : "-";
-
   return (
     <>
       <div className="flex flex-col items-center">
@@ -74,10 +110,9 @@ export default function Page() {
           width={200}
           height={200}
         />
-        <h1 className="mt-10 text-4xl font-bold text-blue-700">
+        <h1 className="mt-10 text-4xl font-bold text-black-700">
           การวิ่งของฉัน
         </h1>
-        <h2 className="mt-5 text-2xl text-gray-400">บริการจัดการงานที่ทำ</h2>
 
         <div className="w-10/12 mt-3 overflow-x-auto">
           <table className="w-full border-collapse">
@@ -173,7 +208,6 @@ export default function Page() {
             </tbody>
           </table>
         </div>
-
 
         {/* ปุ่มไปหน้าเพิ่มข้อมูล */}
         <div className="mt-6 flex justify-end">

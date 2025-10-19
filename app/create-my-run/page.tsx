@@ -44,47 +44,62 @@ export default function Page() {
     let imageUrl: string | null = null;
 
     try {
+      // 0) debug คร่าว ๆ
+      if (imageFile) {
+        console.log("UPLOAD DEBUG:", {
+          bucket: "test_bk",
+          name: imageFile.name,
+          type: imageFile.type,
+          size: imageFile.size,
+        });
+      }
+
       // 1) อัปโหลดรูป (ถ้ามี)
       if (imageFile) {
         const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase();
-        const path = `runs/${Date.now()}.${ext}`;
+        const path = `${Date.now()}.${ext}`; // เก็บที่ root ของ test_bk
 
         const { error: upErr } = await supabase.storage
-          .from("test_bk") // ← ชื่อ bucket (ตั้งให้เป็น Public จะง่ายสุด)
+          .from("test_bk")
           .upload(path, imageFile, {
             cacheControl: "3600",
-            upsert: false,
+            upsert: true,
             contentType: imageFile.type || "image/*",
           });
+
         if (upErr) {
-          console.error(upErr);
-          alert("เกิดข้อผิดพลาดในการอัปโหลดรูป");
+          console.error("UPLOAD ERROR:", upErr);
+          alert(`เกิดข้อผิดพลาดในการอัปโหลดรูป: ${upErr.message}`);
+          setSaving(false);
           return;
         }
 
-        const { data: pub } = supabase.storage
-          .from("test_bk")
-          .getPublicUrl(path);
-        imageUrl = pub.publicUrl; // bucket แบบ Public จะแสดงได้ทันที
-        // NOTE: ถ้า bucket เป็น Private ให้ใช้ createSignedUrl() แทน
+        // เก็บ "ชื่อไฟล์" (path) ลงฐานข้อมูล
+        imageUrl = path;
       }
 
       // 2) บันทึก DB
       const { error: insErr } = await supabase.from("myrun_tb").insert({
-        run_date,
+        run_date, // YYYY-MM-DD
         run_distance: Number(run_distance),
         run_place,
         run_image_url: imageUrl,
       });
 
       if (insErr) {
-        console.error(insErr);
-        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+        console.error("INSERT ERROR:", {
+          message: insErr.message,
+          details: insErr.details,
+          hint: insErr.hint,
+          code: insErr.code,
+        });
+        alert(`เกิดข้อผิดพลาดในการบันทึกข้อมูล: ${insErr.message}`);
+        setSaving(false);
         return;
       }
 
       alert("บันทึกข้อมูลเรียบร้อย");
-      router.push("/show-all-myrun"); // ← กลับไปหน้ารายการวิ่ง
+      router.push("/show-all-myrun");
     } finally {
       setSaving(false);
     }
@@ -108,13 +123,11 @@ export default function Page() {
                 ป้อนวันวิ่ง
               </label>
               <input
+                type="date"
                 value={run_date}
                 onChange={(e) => setRunDate(e.target.value)}
-                type="text"
-                placeholder="ป้อนวันวิ่ง"
                 className="w-full border border-gray-300 rounded-none p-2
-                           placeholder-gray-400 focus:outline-none focus:ring-2
-                           focus:ring-sky-400 focus:border-sky-400"
+                 focus:outline-none focus:ring-2 focus:ring-sky-400"
                 required
               />
             </div>
