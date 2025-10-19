@@ -24,7 +24,7 @@ export default function Home() {
 
         <h1 >You can create and update your running record</h1>
         <Link
-          href="/alltask"
+          href="/show-all-myrun"
           className="bg-blue-700  mt-10 px-15 py-2 rounded text-white rounded
           hover:bg-blue-400"
         >
