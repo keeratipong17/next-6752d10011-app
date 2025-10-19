@@ -14,16 +14,21 @@ export default function Home() {
           width={200}
           height={200}
         />
-        <h1 className="mt-10 text-4xl font-bold text-blue-700">
-          Manage Task App
+        <h1 className="mt-10 text-4xl font-bold text-black-700">
+          Welcome to MyRun
         </h1>
+        <br/>
 
-        <h1 className="mt-5 text-2xl text-gray-400">บริการจัดการงานที่ทำ</h1>
+        <h1 >Your personal running record</h1>
+        <br/>
+
+        <h1 >You can create and update your running record</h1>
         <Link
           href="/alltask"
-          className="bg-sky-400  mt-10 px-25 py-4 rounded text-white"
+          className="bg-blue-700  mt-10 px-15 py-2 rounded text-white rounded
+          hover:bg-blue-400"
         >
-          เข้าใช้งานแอปพลิเคชั่น
+          เข้าสู่หน้าข้อมูลการวิ่งของฉัน
         </Link>
       </div>
       

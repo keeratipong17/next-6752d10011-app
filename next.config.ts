@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'slawneavswmxfjkbvtpz.supabase.co',
         port: '',
-        pathname: '/test_bk/**',
+        pathname: '/**',
         search: '',
       },
     ],
